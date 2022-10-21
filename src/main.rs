@@ -1,7 +1,7 @@
 use core::fmt;
 
 use average::{Mean, WeightedMean};
-use models::{BinanceP2PSearch, CalypsoResponse};
+use models::{BinanceP2PSearch, BudaResponse, CalypsoResponse, MercadoBitcoinResponse};
 use reqwest::Error as ReqwestError;
 use rust_decimal::prelude::{ToPrimitive, Zero};
 
@@ -38,7 +38,7 @@ impl From<&ReqwestError> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO: write different msgs for different error types
-        write!(f, "Error Huehuehueh")
+        write!(f, "Error TODO")
     }
 }
 
@@ -124,15 +124,59 @@ async fn get_calypso_price(asset: &str) -> f64 {
     calypso_price
 }
 
+// Only supports BRL
+async fn get_price_from_mercado_bitcoin(asset: &str) -> f64 {
+    let mut mercado_bitcoin_price = 0.0;
+    let url = format!("https://www.mercadobitcoin.net/api/{}/ticker/", asset);
+    let res = reqwest::get(url).await;
+    match res {
+        Ok(res) => match res.json::<MercadoBitcoinResponse>().await {
+            Ok(mercado_bitcoin_response) => {
+                mercado_bitcoin_price = mercado_bitcoin_response.ticker.get_price();
+            }
+            Err(e) => println!("Parsing Error: {:#?}", e),
+        },
+        Err(e) => {
+            println!("Error: {:#?}", e)
+        }
+    }
+
+    mercado_bitcoin_price
+}
+
+async fn get_buda_price(asset: &str, fiat: &str) -> f64 {
+    let mut buda_price = 0.0;
+    let url = format!(
+        "https://www.buda.com/api/v2/markets/{}-{}/ticker.json",
+        asset, fiat
+    );
+    let res = reqwest::get(url).await;
+    println!("{:#?}", res);
+    match res {
+        Ok(res) => match res.json::<BudaResponse>().await {
+            Ok(buda_response) => buda_price = buda_response.ticker.get_last_price(),
+            Err(e) => {
+                println!("{:#?}", e);
+            }
+        },
+        Err(e) => println!("{:#?}", e),
+    }
+    buda_price
+}
+
 #[tokio::main]
 async fn main() {
     let binance_price_ars: f64 = get_binance_mean_p2p_price("USDT", "ARS").await;
     let binance_price_brl: f64 = get_binance_mean_p2p_price("USDT", "BRL").await;
     let binance_price_cop: f64 = get_binance_mean_p2p_price("USDT", "COP").await;
+    let buda_price_cop: f64 = get_buda_price("USDC", "COP").await;
+    let mercado_bitcoin_price = get_price_from_mercado_bitcoin("USDC").await;
 
-    println!("BinanceP2P price ARS/USDT: {}", binance_price_ars);
-    println!("BinanceP2P price BRL/USDT: {}", binance_price_brl);
-    println!("BinanceP2P price COP/USDT: {}", binance_price_cop);
+    println!("BinanceP2P price USDT/ARS: {}", binance_price_ars);
+    println!("BinanceP2P price USDT/BRL: {}", binance_price_brl);
+    println!("BinanceP2P price USDT/COP: {}", binance_price_cop);
+    println!("Buda Price USDT/COP: {}", buda_price_cop);
+    println!("Mercado Bitcoin Price USDC/BRL {}", mercado_bitcoin_price);
     println!("-----------------------------------------------------");
     println!("ARS avg price calculation between two sources:");
 
