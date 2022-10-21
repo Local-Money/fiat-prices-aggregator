@@ -36,3 +36,10 @@ pub struct BinanceP2PSearch {
     pub rows: u128,
     pub trade_type: String,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CalypsoResponse {
+    pub ask: Decimal,
+    pub time: u64,
+}
