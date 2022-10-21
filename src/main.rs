@@ -92,14 +92,9 @@ async fn get_price_from_calypso(asset: &str) -> Result<CalypsoResponse, Error> {
     }
 }
 
-#[tokio::main]
-async fn main() {
-    // Define vars
-    let mut binance_price: f64 = 0f64;
-    let mut calypso_price: f64 = 0f64;
-
-    // Get price from Binance
-    let binance_response = get_price_from_binance_p2p("USDT", "ARS").await;
+async fn get_binance_mean_p2p_price(asset: &str, fiat: &str) -> f64 {
+    let mut binance_price = 0.0;
+    let binance_response = get_price_from_binance_p2p(asset, fiat).await;
     match binance_response {
         Ok(res) => {
             let mut weigthed_mean = WeightedMean::new();
@@ -113,35 +108,55 @@ async fn main() {
         }
         Err(e) => println!("Error: {}", e),
     };
+    binance_price
+}
 
-    // Get price from Calypso
-    let calypso_response = get_price_from_calypso("USDT").await;
+// Only supporst ARS as fiat
+async fn get_calypso_price(asset: &str) -> f64 {
+    let mut calypso_price = 0.0;
+    let calypso_response = get_price_from_calypso(asset).await;
     match calypso_response {
         Ok(res) => {
             calypso_price = res.ask.to_f64().unwrap_or(0f64);
         }
         Err(e) => println!("Error: {}", e),
     }
+    calypso_price
+}
 
+#[tokio::main]
+async fn main() {
+    let binance_price_ars: f64 = get_binance_mean_p2p_price("USDT", "ARS").await;
+    let binance_price_brl: f64 = get_binance_mean_p2p_price("USDT", "BRL").await;
+    let binance_price_cop: f64 = get_binance_mean_p2p_price("USDT", "COP").await;
+
+    println!("BinanceP2P price ARS/USDT: {}", binance_price_ars);
+    println!("BinanceP2P price BRL/USDT: {}", binance_price_brl);
+    println!("BinanceP2P price COP/USDT: {}", binance_price_cop);
+    println!("-----------------------------------------------------");
+    println!("ARS avg price calculation between two sources:");
+
+    let calypso_price: f64 = get_calypso_price("USDT").await;
     // Print results
-    println!("Binance price {}", binance_price);
+    println!("Binance price {}", binance_price_ars);
     println!("Calypso price {}", calypso_price);
-    if binance_price == calypso_price && calypso_price.is_zero() {
+
+    if binance_price_ars == calypso_price && calypso_price.is_zero() {
         println!("Failed to fetch price from both sources");
-    } else if !binance_price.is_zero() && !calypso_price.is_zero() {
+    } else if !binance_price_ars.is_zero() && !calypso_price.is_zero() {
         println!("Got price from both sources, calculate weigthed mean");
         let mut weigthed_mean_price = WeightedMean::new();
-        weigthed_mean_price.add(binance_price, 3.0);
+        weigthed_mean_price.add(binance_price_ars, 3.0);
         weigthed_mean_price.add(calypso_price, 1.0);
-        let mean_price: Mean = [binance_price, calypso_price].iter().collect();
+        let mean_price: Mean = [binance_price_ars, calypso_price].iter().collect();
         println!("Mean price {}", mean_price.mean());
         println!("Weigthed mean price {}", weigthed_mean_price.mean());
     } else {
-        let arr = [binance_price, calypso_price];
+        let arr = [binance_price_ars, calypso_price];
         let price = arr.iter().max_by(|a, b| a.total_cmp(b)).unwrap();
 
         println!("Price is {}", &price);
-        if binance_price.is_zero() {
+        if binance_price_ars.is_zero() {
             println!("Failed to get price from Binance");
         }
         if calypso_price.is_zero() {
