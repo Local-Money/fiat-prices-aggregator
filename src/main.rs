@@ -151,7 +151,6 @@ async fn get_buda_price(asset: &str, fiat: &str) -> f64 {
         asset, fiat
     );
     let res = reqwest::get(url).await;
-    println!("{:#?}", res);
     match res {
         Ok(res) => match res.json::<BudaResponse>().await {
             Ok(buda_response) => buda_price = buda_response.ticker.get_last_price(),
@@ -166,44 +165,53 @@ async fn get_buda_price(asset: &str, fiat: &str) -> f64 {
 
 #[tokio::main]
 async fn main() {
+    // Get USDT/ARS from BinanceP2P and Calypso
+    let mut ars_mean_price = WeightedMean::new();
     let binance_price_ars: f64 = get_binance_mean_p2p_price("USDT", "ARS").await;
+    let calypso_price_ars: f64 = get_calypso_price("USDT").await;
+    ars_mean_price.add(binance_price_ars, 3.0);
+    ars_mean_price.add(calypso_price_ars, 1.0);
+    println!("USD/ARS: {}", ars_mean_price.mean());
+
+    // Get USDT/BRL from BinanceP2P and USDC/BRL from MercadoBitcoin
     let binance_price_brl: f64 = get_binance_mean_p2p_price("USDT", "BRL").await;
+    let mercado_bitcoin_price_brl = get_price_from_mercado_bitcoin("USDC").await;
+    let brl_prices = &[binance_price_brl, mercado_bitcoin_price_brl];
+    let brl_mean_price: Mean = brl_prices.iter().map(|x| *x).collect();
+    println!("USD/BRL: {}", brl_mean_price.mean());
+
+    // Get USDT/COP from BinanceP2P and USDC/COP from Buda
     let binance_price_cop: f64 = get_binance_mean_p2p_price("USDT", "COP").await;
     let buda_price_cop: f64 = get_buda_price("USDC", "COP").await;
-    let mercado_bitcoin_price = get_price_from_mercado_bitcoin("USDC").await;
+    let mut cop_mean_price = WeightedMean::new();
+    cop_mean_price.add(binance_price_cop, 3.0);
+    cop_mean_price.add(buda_price_cop, 1.0);
+    println!("USD/COP: {}", cop_mean_price.mean());
 
-    println!("BinanceP2P price USDT/ARS: {}", binance_price_ars);
-    println!("BinanceP2P price USDT/BRL: {}", binance_price_brl);
-    println!("BinanceP2P price USDT/COP: {}", binance_price_cop);
-    println!("Buda Price USDT/COP: {}", buda_price_cop);
-    println!("Mercado Bitcoin Price USDC/BRL {}", mercado_bitcoin_price);
-    println!("-----------------------------------------------------");
-    println!("ARS avg price calculation between two sources:");
-
-    let calypso_price: f64 = get_calypso_price("USDT").await;
     // Print results
     println!("Binance price {}", binance_price_ars);
-    println!("Calypso price {}", calypso_price);
+    println!("Calypso price {}", calypso_price_ars);
 
-    if binance_price_ars == calypso_price && calypso_price.is_zero() {
+    // Extract to function and reuse for all fiat currencies
+    if binance_price_ars == calypso_price_ars && calypso_price_ars.is_zero() {
         println!("Failed to fetch price from both sources");
-    } else if !binance_price_ars.is_zero() && !calypso_price.is_zero() {
+    } else if !binance_price_ars.is_zero() && !calypso_price_ars.is_zero() {
         println!("Got price from both sources, calculate weigthed mean");
         let mut weigthed_mean_price = WeightedMean::new();
         weigthed_mean_price.add(binance_price_ars, 3.0);
-        weigthed_mean_price.add(calypso_price, 1.0);
-        let mean_price: Mean = [binance_price_ars, calypso_price].iter().collect();
+        weigthed_mean_price.add(calypso_price_ars, 1.0);
+        let mean_price: Mean = [binance_price_ars, calypso_price_ars].iter().collect();
         println!("Mean price {}", mean_price.mean());
         println!("Weigthed mean price {}", weigthed_mean_price.mean());
     } else {
-        let arr = [binance_price_ars, calypso_price];
+        let arr = [binance_price_ars, calypso_price_ars];
         let price = arr.iter().max_by(|a, b| a.total_cmp(b)).unwrap();
 
         println!("Price is {}", &price);
         if binance_price_ars.is_zero() {
             println!("Failed to get price from Binance");
         }
-        if calypso_price.is_zero() {
+        if calypso_price_ars.is_zero() {
             println!("Failed to get price from Calypso")
         }
     }
