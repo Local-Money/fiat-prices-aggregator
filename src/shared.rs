@@ -43,6 +43,18 @@ impl fmt::Display for Error {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
+pub struct AccountResponse {
+    pub account: AccountInfo,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub struct AccountInfo {
+    pub account_number: String,
+    pub sequence: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct BinanceAdv {
     pub price: Decimal,
     pub tradable_quantity: Decimal,
