@@ -1,5 +1,4 @@
 use crate::shared::{get_avg_from_sources, get_binance_mean_p2p_price, Error, PriceSource};
-use localterra_protocol::currencies::FiatCurrency;
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 use serde::{Deserialize, Serialize};
 

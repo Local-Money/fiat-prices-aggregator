@@ -19,7 +19,7 @@ use cosmwasm_std::Uint128;
 use dotenv::dotenv;
 use localterra_protocol::{
     currencies::FiatCurrency,
-    offer::{CurrencyPrice, ExecuteMsg::UpdatePrice},
+    offer::{CurrencyPrice, ExecuteMsg::UpdatePrices},
 };
 use shared::AccountResponse;
 
@@ -48,6 +48,9 @@ async fn main() {
         .account_id(var("ADDR_PREFIX").unwrap().as_str())
         .unwrap();
 
+    // TODO: Send all price updates in a single msg with a vec
+    // https://finder.kujira.app/harpoon-4/tx/8C1C3CBA4C1263712A952F10AF22FC601B745332AF497D697C3F2C651702D6A8
+
     // Fetch Account details, we need the account sequence number
     let account_url = format!(
         "{}cosmos/auth/v1beta1/accounts/{}",
@@ -61,18 +64,22 @@ async fn main() {
     // Send Tx to Contract
     let contract_addr = var("OFFER_ADDR").unwrap().parse::<AccountId>().unwrap();
     let mut tx_body_builder = tx::BodyBuilder::new();
-
+    let mut currency_prices: Vec<CurrencyPrice> = vec![];
     prices.iter().for_each(|price_fiat| {
         // TODO: although most currencies have 2 decimals,
         // some currencies like JPY have 3 and some exotic currencies have zero.
         let usd_price = Uint128::from((price_fiat.0 * 100.0).round() as u64);
         let fiat_currency = price_fiat.1.clone();
-        let update_price_msg = UpdatePrice(CurrencyPrice {
+        currency_prices.push(CurrencyPrice {
             currency: fiat_currency,
             usd_price,
             updated_at: 0,
         });
-        let json_msg = serde_json::to_string(&update_price_msg).unwrap();
+        
+    });
+    // let update_price_msg = UpdatePrices()
+    let update_prices_msg = UpdatePrices(currency_prices);
+    let json_msg = serde_json::to_string(&update_prices_msg).unwrap();
         let execute_msg = MsgExecuteContract {
             sender: sender_addr.clone(),
             contract: contract_addr.clone(),
@@ -80,7 +87,6 @@ async fn main() {
             funds: vec![],
         };
         tx_body_builder.msg(execute_msg.into_any().unwrap());
-    });
 
     let signer_info = SignerInfo::single_direct(
         Some(sender_pub_key.clone()),
