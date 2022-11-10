@@ -62,7 +62,7 @@ async fn main() {
     println!("Account sequence is {}", account_data.account.sequence);
 
     // Send Tx to Contract
-    let contract_addr = var("OFFER_ADDR").unwrap().parse::<AccountId>().unwrap();
+    let contract_addr = var("PRICE_ADDR").unwrap().parse::<AccountId>().unwrap();
     let mut tx_body_builder = tx::BodyBuilder::new();
     let mut currency_prices: Vec<CurrencyPrice> = vec![];
     prices.iter().for_each(|price_fiat| {
@@ -75,18 +75,17 @@ async fn main() {
             usd_price,
             updated_at: 0,
         });
-        
     });
     // let update_price_msg = UpdatePrices()
     let update_prices_msg = UpdatePrices(currency_prices);
     let json_msg = serde_json::to_string(&update_prices_msg).unwrap();
-        let execute_msg = MsgExecuteContract {
-            sender: sender_addr.clone(),
-            contract: contract_addr.clone(),
-            msg: json_msg.into_bytes(),
-            funds: vec![],
-        };
-        tx_body_builder.msg(execute_msg.into_any().unwrap());
+    let execute_msg = MsgExecuteContract {
+        sender: sender_addr.clone(),
+        contract: contract_addr.clone(),
+        msg: json_msg.into_bytes(),
+        funds: vec![],
+    };
+    tx_body_builder.msg(execute_msg.into_any().unwrap());
 
     let signer_info = SignerInfo::single_direct(
         Some(sender_pub_key.clone()),
