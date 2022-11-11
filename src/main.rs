@@ -48,9 +48,6 @@ async fn main() {
         .account_id(var("ADDR_PREFIX").unwrap().as_str())
         .unwrap();
 
-    // TODO: Send all price updates in a single msg with a vec
-    // https://finder.kujira.app/harpoon-4/tx/8C1C3CBA4C1263712A952F10AF22FC601B745332AF497D697C3F2C651702D6A8
-
     // Fetch Account details, we need the account sequence number
     let account_url = format!(
         "{}cosmos/auth/v1beta1/accounts/{}",
