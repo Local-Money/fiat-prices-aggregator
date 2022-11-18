@@ -1,8 +1,8 @@
-extern crate dotenv;
+#[macro_use]
+extern crate dotenv_codegen;
 
 pub mod fiat;
 pub mod shared;
-use std::env::var;
 
 use crate::fiat::{ars::get_ars_price, brl::get_brl_price, cop::get_cop_price};
 use bip39::Mnemonic;
@@ -39,19 +39,17 @@ async fn main() {
     let path = "m/44'/118'/0'/0/0"
         .parse::<bip32::DerivationPath>()
         .unwrap();
-    let seed_words = var("ADMIN_SEED").unwrap();
+    let seed_words = dotenv!("ADMIN_SEED");
     let mnemonic = Mnemonic::parse_normalized(&seed_words).unwrap();
     let seed = mnemonic.to_seed("");
     let sender_priv_key = secp256k1::SigningKey::derive_from_path(seed, &path).unwrap();
     let sender_pub_key = sender_priv_key.public_key();
-    let sender_addr = sender_pub_key
-        .account_id(var("ADDR_PREFIX").unwrap().as_str())
-        .unwrap();
+    let sender_addr = sender_pub_key.account_id(dotenv!("ADDR_PREFIX")).unwrap();
 
     // Fetch Account details, we need the account sequence number
     let account_url = format!(
         "{}cosmos/auth/v1beta1/accounts/{}",
-        var("LCD").unwrap(),
+        dotenv!("LCD"),
         sender_addr.to_string()
     );
     let account_res = reqwest::get(account_url).await.unwrap();
@@ -59,7 +57,7 @@ async fn main() {
     println!("Account sequence is {}", account_data.account.sequence);
 
     // Send Tx to Contract
-    let contract_addr = var("PRICE_ADDR").unwrap().parse::<AccountId>().unwrap();
+    let contract_addr = dotenv!("PRICE_ADDR").parse::<AccountId>().unwrap();
     let mut tx_body_builder = tx::BodyBuilder::new();
     let mut currency_prices: Vec<CurrencyPrice> = vec![];
     prices.iter().for_each(|price_fiat| {
@@ -105,11 +103,11 @@ async fn main() {
         .clone()
         .parse::<i64>()
         .unwrap() as u64;
-    let chain_id = var("CHAIN_ID").unwrap().parse::<Id>().unwrap();
+    let chain_id = dotenv!("CHAIN_ID").parse::<Id>().unwrap();
     let sign_doc = SignDoc::new(&tx_body, &auth_info, &chain_id, account_number).unwrap();
     let tx_signed = sign_doc.sign(&sender_priv_key).unwrap();
-    let rpc_url = var("RPC").unwrap();
-    let client = HttpClient::new(rpc_url.as_str()).unwrap();
+    let rpc_url = dotenv!("RPC");
+    let client = HttpClient::new(rpc_url).unwrap();
     let res = tx_signed.broadcast_commit(&client).await.unwrap();
     println!("{}", res.deliver_tx.info.to_string());
     println!("res: {:#?}", res);
