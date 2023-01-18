@@ -33,7 +33,7 @@ async fn get_calypso_price(asset: &str) -> Result<f64, Error> {
 // return only one
 pub async fn get_ars_price() -> f64 {
     let binance_price_ars: f64 = get_binance_mean_p2p_price("USDT", "ARS").await;
-    let calypso_price_ars: f64 = get_calypso_price("USDT").await.unwrap();
+    let calypso_price_ars: f64 = get_calypso_price("USDT").await.unwrap_or(0f64);
     let price_source_a = PriceSource {
         price: binance_price_ars,
         fiat: String::from("ARS"),

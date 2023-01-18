@@ -36,8 +36,10 @@ impl From<&ReqwestError> for Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TODO: write different msgs for different error types
-        write!(f, "Error TODO")
+        match self.kind {
+            ErrorKind::Request => write!(f, "Request error"),
+            ErrorKind::Response => write!(f, "Response error"),
+        }
     }
 }
 
