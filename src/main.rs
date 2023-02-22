@@ -4,7 +4,7 @@ extern crate dotenv_codegen;
 pub mod fiat;
 pub mod shared;
 
-use crate::fiat::{ars::get_ars_price, brl::get_brl_price, cop::get_cop_price};
+use crate::fiat::{ars::get_ars_price, brl::get_brl_price, cop::get_cop_price, ves::get_ves_price};
 use bip39::Mnemonic;
 use cosmrs::{
     bip32,
@@ -29,10 +29,13 @@ async fn main() {
     let ars = get_ars_price().await;
     let brl = get_brl_price().await;
     let cop = get_cop_price().await;
+    let ves = get_ves_price().await;
+
     let prices = vec![
         (ars, FiatCurrency::ARS),
         (brl, FiatCurrency::BRL),
         (cop, FiatCurrency::COP),
+        (ves, FiatCurrency::VES),
     ];
 
     // Derivate Wallet from Seed
