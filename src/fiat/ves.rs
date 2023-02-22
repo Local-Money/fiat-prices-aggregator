@@ -41,7 +41,7 @@ pub async fn get_ves_price() -> f64 {
     };
     let price_source_b = PriceSource {
         price: yadio_price,
-        fiat: String::from("COP"),
+        fiat: String::from("VES"),
         source: String::from("Yadio"),
         weight: 1.0,
     };
