@@ -5,7 +5,6 @@ pub mod fiat;
 pub mod shared;
 pub mod api;
 
-use crate::fiat::{ars::get_ars_price, brl::get_brl_price, cop::get_cop_price};
 use bip39::Mnemonic;
 use cosmrs::{
     bip32,
@@ -23,17 +22,26 @@ use localterra_protocol::{
     offer::{CurrencyPrice, ExecuteMsg::UpdatePrices},
 };
 use shared::AccountResponse;
+use crate::api::yadio::{get_yadio_prices, Prices};
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let ars = get_ars_price().await;
-    let brl = get_brl_price().await;
-    let cop = get_cop_price().await;
+    let yadio_request = get_yadio_prices().await;
+    let price = match yadio_request {
+        Ok(prices) => prices,
+        Err(_) => Prices::default()
+    };
+
     let prices = vec![
-        (ars, FiatCurrency::ARS),
-        (brl, FiatCurrency::BRL),
-        (cop, FiatCurrency::COP),
+        (price.ARS, FiatCurrency::ARS),
+        (price.BRL, FiatCurrency::BRL),
+        (price.CLP, FiatCurrency::CLP),
+        (price.COP, FiatCurrency::COP),
+        (price.GBP, FiatCurrency::GBP),
+        (price.MXN, FiatCurrency::MXN),
+        (price.VES, FiatCurrency::VES),
+        (1f64, FiatCurrency::USD),
     ];
 
     // Derivate Wallet from Seed
