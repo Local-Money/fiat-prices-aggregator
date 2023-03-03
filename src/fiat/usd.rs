@@ -8,7 +8,7 @@ pub async fn get_usd_price() -> f64 {
 }
 
 #[tokio::test]
-async fn test_get_calypso_price_usdt_ars() {
+async fn test_get_calypso_price_usdt_usd() {
     let price_source = get_calypso_price("USDT", "USD").await;
     assert!(price_source.is_ok());
     assert!(price_source.value_or_log("get_calypso_price").ne(&0f64));
