@@ -22,7 +22,7 @@ pub struct PriceSource {
     pub weight: f64,
 }
 
-#[deprecate]
+#[deprecated]
 pub fn get_avg_from_sources(price_source_a: PriceSource, price_source_b: PriceSource) -> f64 {
     if price_source_a.price == price_source_b.price && price_source_b.price.is_zero() {
         println!(
