@@ -38,11 +38,13 @@ async fn main() {
         (price.BRL, FiatCurrency::BRL),
         (price.CLP, FiatCurrency::CLP),
         (price.COP, FiatCurrency::COP),
+        (price.EUR, FiatCurrency::EUR),
         (price.GBP, FiatCurrency::GBP),
         (price.MXN, FiatCurrency::MXN),
         (price.VES, FiatCurrency::VES),
     ];
-
+    let prices_json = serde_json::to_string(&prices).unwrap();
+    println!("prices: {}", prices_json);
     // Derivate Wallet from Seed
     let path = "m/44'/118'/0'/0/0"
         .parse::<bip32::DerivationPath>()
@@ -82,6 +84,7 @@ async fn main() {
     // let update_price_msg = UpdatePrices()
     let update_prices_msg = UpdatePrices(currency_prices);
     let json_msg = serde_json::to_string(&update_prices_msg).unwrap();
+    println!("update_msg: {}", json_msg);
     let execute_msg = MsgExecuteContract {
         sender: sender_addr.clone(),
         contract: contract_addr.clone(),
@@ -103,7 +106,7 @@ async fn main() {
         amount: 320u128,
         denom: "ukuji".parse().unwrap(),
     };
-    let auth_info = signer_info.auth_info(Fee::from_amount_and_gas(gas_amount, 250_000u64));
+    let auth_info = signer_info.auth_info(Fee::from_amount_and_gas(gas_amount, 260_000u64));
     let tx_body = tx_body_builder.finish();
     let account_number = account_data
         .account
