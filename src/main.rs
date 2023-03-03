@@ -3,6 +3,7 @@ extern crate dotenv_codegen;
 
 pub mod fiat;
 pub mod shared;
+pub mod api;
 
 use crate::fiat::{ars::get_ars_price, brl::get_brl_price, cop::get_cop_price};
 use bip39::Mnemonic;
