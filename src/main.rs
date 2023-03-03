@@ -41,7 +41,6 @@ async fn main() {
         (price.GBP, FiatCurrency::GBP),
         (price.MXN, FiatCurrency::MXN),
         (price.VES, FiatCurrency::VES),
-        (1f64, FiatCurrency::USD),
     ];
 
     // Derivate Wallet from Seed
