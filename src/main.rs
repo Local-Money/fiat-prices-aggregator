@@ -63,7 +63,9 @@ async fn main() {
         sender_addr.to_string()
     );
     let account_res = reqwest::get(account_url).await.unwrap();
-    let account_data = account_res.json::<AccountResponse>().await.unwrap();
+    let account_data = account_res.json::<AccountResponse>().await;
+    println!("account_data ok: {}", account_data.is_ok());
+    let account_data = account_data.unwrap();
     println!("Account sequence is {}", account_data.account.sequence);
 
     // Send Tx to Contract
