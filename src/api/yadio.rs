@@ -14,9 +14,11 @@ pub struct Prices {
     pub BRL: f64,
     pub CLP: f64,
     pub COP: f64,
+    pub EUR: f64,
     pub GBP: f64,
     pub MXN: f64,
-    pub EUR: f64,
+    pub NGN: f64,
+    pub THB: f64,
     pub VES: f64,
 }
 
@@ -27,9 +29,11 @@ impl Default for Prices {
             BRL: 0.0,
             CLP: 0.0,
             COP: 0.0,
-            GBP: 0.0,
             EUR: 0.0,
+            GBP: 0.0,
+            NGN: 0.0,
             MXN: 0.0,
+            THB: 0.0,
             VES: 0.0,
         }
     }
