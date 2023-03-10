@@ -107,10 +107,10 @@ async fn main() {
             .unwrap() as u64,
     );
     let gas_amount = Coin {
-        amount: 320u128,
+        amount: 358u128,
         denom: "ukuji".parse().unwrap(),
     };
-    let auth_info = signer_info.auth_info(Fee::from_amount_and_gas(gas_amount, 260_000u64));
+    let auth_info = signer_info.auth_info(Fee::from_amount_and_gas(gas_amount, 300_000u64));
     let tx_body = tx_body_builder.finish();
     let account_number = account_data
         .account
