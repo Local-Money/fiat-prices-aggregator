@@ -41,6 +41,8 @@ async fn main() {
         (price.EUR, FiatCurrency::EUR),
         (price.GBP, FiatCurrency::GBP),
         (price.MXN, FiatCurrency::MXN),
+        (price.NGN, FiatCurrency::NGN),
+        (price.THB, FiatCurrency::THB),
         (price.VES, FiatCurrency::VES),
     ];
     let prices_json = serde_json::to_string(&prices).unwrap();
