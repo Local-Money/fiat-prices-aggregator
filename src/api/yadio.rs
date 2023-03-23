@@ -12,6 +12,7 @@ struct Currency {
 pub struct Prices {
     pub ARS: f64,
     pub BRL: f64,
+    pub CAD: f64,
     pub CLP: f64,
     pub COP: f64,
     pub EUR: f64,
@@ -27,6 +28,7 @@ impl Default for Prices {
         Prices {
             ARS: 0.0,
             BRL: 0.0,
+            CAD: 0.0,
             CLP: 0.0,
             COP: 0.0,
             EUR: 0.0,
