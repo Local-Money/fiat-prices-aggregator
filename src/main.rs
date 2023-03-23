@@ -36,6 +36,7 @@ async fn main() {
     let prices = vec![
         (price.ARS, FiatCurrency::ARS),
         (price.BRL, FiatCurrency::BRL),
+        (price.CAD, FiatCurrency::CAD),
         (price.CLP, FiatCurrency::CLP),
         (price.COP, FiatCurrency::COP),
         (price.EUR, FiatCurrency::EUR),
